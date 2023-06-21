@@ -1,6 +1,5 @@
-const { DataTypes } = require('sequelize');
+const {DataTypes, Sequelize} = require('sequelize');
 const sequelize = require('../services/sequelize');
-const validator = require('validator');
 
 const User = sequelize.define('User', {
     id: {
@@ -52,13 +51,13 @@ const User = sequelize.define('User', {
     phone_number: {
         type: DataTypes.STRING,
         allowNull: true,
-        validate: {
+        /*validate: {
             isValidPhoneNumber(value) {
                 if (!/^(\+\d{1,3})?[-.\s]?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/.test(value)) {
                     throw new Error('Le numéro de téléphone doit être au format valide.');
                 }
             },
-        }
+        }*/
     },
     role: {
         type: DataTypes.STRING,
@@ -68,14 +67,16 @@ const User = sequelize.define('User', {
             isIn: [['Admin', 'User']],
         },
     },
-    token: {
-        type: DataTypes.STRING,
-        allowNull: true,
-    },
+    authTokens: [{
+        authToken: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        }
+    }],
     created_at: {
         type: DataTypes.DATE,
         allowNull: false,
-        defaultValue: DataTypes.NOW,
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
     },
 }, {
     tableName: 'Users',
