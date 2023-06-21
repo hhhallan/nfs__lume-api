@@ -1,5 +1,7 @@
 const {DataTypes, Sequelize} = require('sequelize');
 const sequelize = require('../services/sequelize');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 const User = sequelize.define('User', {
     id: {
@@ -41,12 +43,12 @@ const User = sequelize.define('User', {
     password: {
         type: DataTypes.STRING,
         allowNull: false,
-        validate: {
+        /*validate: {
             min: {
-                args: 8,
+                args: 4,
                 msg: 'Le mot de passe doit contenir au minimum 8 caractères.'
             }
-        }
+        }*/
     },
     phone_number: {
         type: DataTypes.STRING,
@@ -68,9 +70,11 @@ const User = sequelize.define('User', {
         },
     },
     authTokens: [{
+        type: DataTypes.JSON,
+        defaultValue: [],
         authToken: {
             type: DataTypes.STRING,
-            allowNull: true,
+            allowNull: false,
         }
     }],
     created_at: {
@@ -82,5 +86,36 @@ const User = sequelize.define('User', {
     tableName: 'Users',
     timestamps: false,
 });
+
+User.prototype.generateAuthTokenAndSaveUser = async function (user) {
+    console.log("func")
+    const authToken = jwt.sign({ id: user.id.toString() }, 'foo');
+    console.log("c1")
+    if (!user.authTokens) {
+        user.authTokens = [];
+    }
+    console.log("c2")
+    user.authTokens.push({ authToken });
+    console.log("c3")
+    await user.save();
+    console.log("c4")
+    return authToken;
+};
+
+User.findUser = async function (email, password) {
+    const user = await this.findOne({ where: { email } });
+    if (!user) throw new Error('Impossible de se connecter.');
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) throw new Error('Mot de passe incorrect.');
+
+    return user;
+};
+
+User.beforeSave(async (user) => {
+    if (user.changed('password')) {
+        user.password = await bcrypt.hash(user.password, 11);
+    }
+});
+
 
 module.exports = User;
