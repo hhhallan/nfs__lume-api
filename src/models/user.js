@@ -69,14 +69,10 @@ const User = sequelize.define('User', {
             isIn: [['Admin', 'User']],
         },
     },
-    authTokens: [{
-        type: DataTypes.JSON,
-        defaultValue: [],
-        authToken: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        }
-    }],
+    authToken: {
+        type: DataTypes.TEXT('long'),
+        allowNull: true,
+    },
     created_at: {
         type: DataTypes.DATE,
         allowNull: false,
@@ -88,18 +84,10 @@ const User = sequelize.define('User', {
 });
 
 User.prototype.generateAuthTokenAndSaveUser = async function (user) {
-    console.log("func")
-    const authToken = jwt.sign({ id: user.id.toString() }, 'foo');
-    console.log("c1")
-    if (!user.authTokens) {
-        user.authTokens = [];
-    }
-    console.log("c2")
-    user.authTokens.push({ authToken });
-    console.log("c3")
+    const token = jwt.sign({ id: user.id.toString() }, process.env.JWT_SECRET);
+    user.authToken = token;
     await user.save();
-    console.log("c4")
-    return authToken;
+    return token;
 };
 
 User.findUser = async function (email, password) {

@@ -16,6 +16,7 @@
     "jsonwebtoken": "^9.0.0",
     "mysql2": "^3.4.0",
     "sequelize": "^6.32.1",
+    "uuidv4": "^6.2.13",
     "validator": "^13.9.0"
   },
   "devDependencies": {

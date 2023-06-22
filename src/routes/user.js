@@ -4,16 +4,14 @@ const router = new express.Router();
 
 // Authentification
 router.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+
     try {
-        console.log("try")
-        const user = await User.findUser(req.body.email, req.body.password);
-        console.log("good1")
-        const authToken = await user.generateAuthTokenAndSaveUser(user);
-        console.log("good2")
-        res.json({ user, authToken });
-        console.log("good3")
+        const user = await User.findUser(email, password);
+        const token = await user.generateAuthTokenAndSaveUser(user);
+        res.json({ user, message: "Utilisateur connecté." });
     } catch (error) {
-        res.status(400).json({error: error.message})
+        res.status(401).json({ error: error.message });
     }
 });
 
