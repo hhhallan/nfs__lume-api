@@ -1,6 +1,6 @@
 const express = require('express');
 const User = require('../models/user');
-const authentification = require('../middlewares/authentification');
+// const authentification = require('../middlewares/authentification');
 const router = new express.Router();
 
 // Authentification
@@ -9,14 +9,14 @@ router.post('/login', async (req, res) => {
 
     try {
         const user = await User.findUser(email, password);
-        const token = await user.generateAuthTokenAndSaveUser(user);
+        const token = await user.generateAuthTokenAndSaveUser2(user);
         res.json({ user, message: "Utilisateur connecté." });
     } catch (error) {
         res.status(401).json({ error: error.message });
     }
 });
 
-router.post('/logout', authentification, async (req, res) => {
+router.post('/logout', async (req, res) => {
     try {
         req.user.authToken = req.user.authToken
     } catch (error) {
@@ -37,7 +37,7 @@ router.post('/', async (req, res) => {
 });
 
 // Read
-router.get('/', authentification, async (req, res) => {
+router.get('/', async (req, res) => {
     try {
         const users = await User.findAll();
         res.status(200).json(users);

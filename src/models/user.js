@@ -69,9 +69,10 @@ const User = sequelize.define('User', {
             isIn: [['Admin', 'User']],
         },
     },
-    authToken: {
+    tokens: {
         type: DataTypes.TEXT('long'),
         allowNull: true,
+        defaultValue: []
     },
     created_at: {
         type: DataTypes.DATE,
@@ -84,14 +85,37 @@ const User = sequelize.define('User', {
 });
 
 User.prototype.generateAuthTokenAndSaveUser = async function (user) {
-    const token = jwt.sign({ id: user.id.toString() }, process.env.JWT_SECRET);
+    const token = jwt.sign({id: user.id.toString()}, process.env.JWT_SECRET);
     user.authToken = token;
     await user.save();
     return token;
 };
 
+User.prototype.generateAuthTokenAndSaveUser2 = async function (user) {
+    const token = jwt.sign({id: user.id.toString()}, process.env.JWT_SECRET);
+    const authToken = {
+        type: 'authToken',
+        token
+    }
+
+   /* if (user.tokens === null) user.tokens = [];
+
+    user.tokens.push(authToken)*/
+
+    if (user.tokens === null) {
+        user.tokens = JSON.stringify([authToken]);
+    } else {
+        const tokensArray = JSON.parse(user.tokens);
+        tokensArray.push(authToken);
+        user.tokens = JSON.stringify(tokensArray);
+    }
+
+    await user.save();
+    return token;
+};
+
 User.findUser = async function (email, password) {
-    const user = await this.findOne({ where: { email } });
+    const user = await this.findOne({where: {email}});
     if (!user) throw new Error('Impossible de se connecter.');
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) throw new Error('Mot de passe incorrect.');
