@@ -1,7 +1,8 @@
 const express = require('express');
 const User = require('../models/user');
-// const authentification = require('../middlewares/authentification');
+const authentification = require('../middlewares/authentification');
 const router = new express.Router();
+const { Op } = require('sequelize');
 
 // Authentification
 router.post('/login', async (req, res) => {
@@ -9,18 +10,48 @@ router.post('/login', async (req, res) => {
 
     try {
         const user = await User.findUser(email, password);
-        const token = await user.generateAuthTokenAndSaveUser2(user);
-        res.json({ user, message: "Utilisateur connecté." });
+
+        const tokensArray = JSON.parse(user.tokens);
+        const updatedTokensArray = tokensArray.filter((tokenObj) => tokenObj.type !== 'authToken');
+        user.tokens = JSON.stringify(updatedTokensArray);
+
+        const token = await user.generateAuthTokenAndSaveUser(user);
+        res.json({ token, message: "Utilisateur connecté." });
     } catch (error) {
         res.status(401).json({ error: error.message });
     }
 });
 
-router.post('/logout', async (req, res) => {
+router.post('/logout', authentification, async (req, res) => {
     try {
-        req.user.authToken = req.user.authToken
+        const authHeader = req.headers.authorization;
+        const authToken = authHeader ? authHeader.split(' ')[1] : null; // Extraction du jeton d'authentification sans le préfixe "Bearer"
+
+        if (!authToken) {
+            return res.status(401).json({ message: 'Jeton d\'authentification non fourni' });
+        }
+
+        const user = await User.findOne({
+            where: {
+                tokens: {
+                    [Op.like]: `%${authToken}%`
+                }
+            }
+        });
+
+        if (!user) {
+            return res.status(401).json({ message: 'Utilisateur non autorisé' });
+        }
+
+        const tokensArray = JSON.parse(user.tokens);
+        const updatedTokensArray = tokensArray.filter((tokenObj) => tokenObj.token !== authToken);
+        user.tokens = JSON.stringify(updatedTokensArray);
+        await user.save();
+
+        res.status(200).json({ message: 'Déconnexion réussie' });
     } catch (error) {
-        res.status(401).json({ error: error.message });
+        console.error(error);
+        res.status(500).json({ message: 'Une erreur est survenue lors de la déconnexion' });
     }
 });
 

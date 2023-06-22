@@ -86,21 +86,10 @@ const User = sequelize.define('User', {
 
 User.prototype.generateAuthTokenAndSaveUser = async function (user) {
     const token = jwt.sign({id: user.id.toString()}, process.env.JWT_SECRET);
-    user.authToken = token;
-    await user.save();
-    return token;
-};
-
-User.prototype.generateAuthTokenAndSaveUser2 = async function (user) {
-    const token = jwt.sign({id: user.id.toString()}, process.env.JWT_SECRET);
     const authToken = {
         type: 'authToken',
         token
     }
-
-   /* if (user.tokens === null) user.tokens = [];
-
-    user.tokens.push(authToken)*/
 
     if (user.tokens === null) {
         user.tokens = JSON.stringify([authToken]);
