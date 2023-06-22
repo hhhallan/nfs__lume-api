@@ -2,6 +2,7 @@ const {DataTypes, Sequelize} = require('sequelize');
 const sequelize = require('../services/sequelize');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { uuid } = require('uuidv4');
 
 const User = sequelize.define('User', {
     id: {
@@ -70,7 +71,7 @@ const User = sequelize.define('User', {
         },
     },
     tokens: {
-        type: DataTypes.TEXT('long'),
+        type: DataTypes.STRING,
         allowNull: true,
         defaultValue: []
     },
@@ -84,23 +85,27 @@ const User = sequelize.define('User', {
     timestamps: false,
 });
 
-User.prototype.generateAuthTokenAndSaveUser = async function (user) {
-    const token = jwt.sign({id: user.id.toString()}, process.env.JWT_SECRET);
-    const authToken = {
+User.generateAuthToken = function() {
+    const token = jwt.sign({ id: uuid().toString() }, process.env.JWT_SECRET);
+    return {
         type: 'authToken',
         token
-    }
+    };
+};
 
-    if (user.tokens === null) {
-        user.tokens = JSON.stringify([authToken]);
+User.prototype.generateAuthTokenAndSaveUser = async function () {
+    const authToken = User.generateAuthToken();
+
+    if (this.tokens === null || this.tokens === '') {
+        this.tokens = JSON.stringify([authToken]);
     } else {
-        const tokensArray = JSON.parse(user.tokens);
+        const tokensArray = JSON.parse(this.tokens);
         tokensArray.push(authToken);
-        user.tokens = JSON.stringify(tokensArray);
+        this.tokens = JSON.stringify(tokensArray);
     }
 
-    await user.save();
-    return token;
+    await this.save();
+    return authToken.token;
 };
 
 User.findUser = async function (email, password) {
