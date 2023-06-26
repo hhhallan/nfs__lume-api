@@ -86,15 +86,12 @@ exports.login = async (req, res) => {
 
     try {
         const user = await User.findUser(email, password);
-
-        let tokensArray = [];
-        if (user.tokens) {
-            tokensArray = JSON.parse(user.tokens);
-        }
-        const updatedTokensArray = tokensArray.filter((tokenObj) => tokenObj.type !== 'authToken');
-        user.tokens = JSON.stringify(updatedTokensArray);
-
+        // Suppression de l'ancien jeton du localStorage (s'il existe)
+        localStorage.removeItem('jwtToken');
         const token = await user.generateAuthTokenAndSaveUser();
+        // Stockage du nouveau jeton dans le localStorage
+        localStorage.setItem('jwtToken', token);
+
         res.json({ token, message: "Utilisateur connecté." });
     } catch (error) {
         res.status(401).json({ error: error.message });

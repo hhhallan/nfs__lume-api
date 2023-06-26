@@ -2,7 +2,7 @@ const {DataTypes, Sequelize} = require('sequelize');
 const sequelize = require('../services/sequelize');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { uuid } = require('uuidv4');
+const {uuid} = require('uuidv4');
 
 const User = sequelize.define('User', {
     id: {
@@ -44,23 +44,10 @@ const User = sequelize.define('User', {
     password: {
         type: DataTypes.STRING,
         allowNull: false,
-        /*validate: {
-            min: {
-                args: 4,
-                msg: 'Le mot de passe doit contenir au minimum 8 caractères.'
-            }
-        }*/
     },
-    phone_number: {
+    phoneNumber: {
         type: DataTypes.STRING,
-        allowNull: true,
-        /*validate: {
-            isValidPhoneNumber(value) {
-                if (!/^(\+\d{1,3})?[-.\s]?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/.test(value)) {
-                    throw new Error('Le numéro de téléphone doit être au format valide.');
-                }
-            },
-        }*/
+        allowNull: false,
     },
     role: {
         type: DataTypes.STRING,
@@ -70,23 +57,19 @@ const User = sequelize.define('User', {
             isIn: [['Admin', 'User']],
         },
     },
-    tokens: {
+    tmpToken: {
         type: DataTypes.STRING,
         allowNull: true,
-        defaultValue: []
     },
     created_at: {
         type: DataTypes.DATE,
         allowNull: false,
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
     },
-}, {
-    tableName: 'Users',
-    timestamps: false,
 });
 
-User.generateAuthToken = function() {
-    const token = jwt.sign({ id: uuid().toString() }, process.env.JWT_SECRET);
+User.generateAuthToken = function () {
+    const token = jwt.sign({id: uuid().toString()}, process.env.JWT_SECRET);
     return {
         type: 'authToken',
         token
@@ -94,17 +77,11 @@ User.generateAuthToken = function() {
 };
 
 User.prototype.generateAuthTokenAndSaveUser = async function () {
-    const authToken = User.generateAuthToken();
+    const authToken = jwt.sign({id: uuid().toString()}, process.env.JWT_SECRET);
 
-    if (this.tokens === null || this.tokens === '') {
-        this.tokens = JSON.stringify([authToken]);
-    } else {
-        const tokensArray = JSON.parse(this.tokens);
-        tokensArray.push(authToken);
-        this.tokens = JSON.stringify(tokensArray);
-    }
+    // Sauvegarde du jeton JWT dans le localStorage
+    localStorage.setItem('jwtToken', authToken.token);
 
-    await this.save();
     return authToken.token;
 };
 
