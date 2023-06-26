@@ -1,5 +1,4 @@
 const User = require('../models/user');
-const {Op} = require("sequelize");
 
 // CRUD
 exports.getAll = async (req, res) => {
@@ -38,13 +37,10 @@ exports.create = async (req, res) => {
             email,
             password,
             first_name,
-            last_name,
-            tokens: ""
+            last_name
         });
 
-        const authToken = await newUser.generateAuthTokenAndSaveUser();
-
-        res.status(201).json({ user: newUser, authToken, message: 'Inscription réussie.' });
+        res.status(201).json({ user: newUser, message: 'Inscription réussie.' });
     } catch (error) {
         console.log('Une erreur est survenue lors de l\'inscription.', error);
         res.status(400).json({ error: 'Une erreur est survenue lors de l\'inscription.' });
@@ -86,11 +82,7 @@ exports.login = async (req, res) => {
 
     try {
         const user = await User.findUser(email, password);
-        // Suppression de l'ancien jeton du localStorage (s'il existe)
-        localStorage.removeItem('jwtToken');
         const token = await user.generateAuthTokenAndSaveUser();
-        // Stockage du nouveau jeton dans le localStorage
-        localStorage.setItem('jwtToken', token);
 
         res.json({ token, message: "Utilisateur connecté." });
     } catch (error) {
@@ -100,32 +92,6 @@ exports.login = async (req, res) => {
 
 exports.logout = async (req, res) => {
     try {
-        const authHeader = req.headers.authorization;
-        const authToken = authHeader ? authHeader.split(' ')[1] : null; // Extraction du jeton d'authentification sans le préfixe "Bearer"
-
-        if (!authToken) {
-            return res.status(401).json({ message: 'Jeton d\'authentification non fourni' });
-        }
-
-        const user = await User.findOne({
-            where: { tokens: { [Op.like]: `%${authToken}%` } }
-        });
-
-        if (!user) {
-            return res.status(401).json({ message: "Vous n'êtes pas connecté." });
-        }
-
-        const tokensArray = JSON.parse(user.tokens);
-        const matchingToken = tokensArray.find((tokenObj) => tokenObj.token === authToken);
-
-        if (!matchingToken) {
-            return res.status(401).json({ message: "Le token d'authentification est invalide." });
-        }
-
-        const updatedTokensArray = tokensArray.filter((tokenObj) => tokenObj.token !== authToken);
-        user.tokens = JSON.stringify(updatedTokensArray);
-        await user.save();
-
         res.status(200).json({ message: 'Déconnexion réussie' });
     } catch (error) {
         console.error(error);

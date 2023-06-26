@@ -45,9 +45,9 @@ const User = sequelize.define('User', {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    phoneNumber: {
+    phone_number: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
     },
     role: {
         type: DataTypes.STRING,
@@ -57,7 +57,7 @@ const User = sequelize.define('User', {
             isIn: [['Admin', 'User']],
         },
     },
-    tmpToken: {
+    tmp_token: {
         type: DataTypes.STRING,
         allowNull: true,
     },
@@ -66,23 +66,12 @@ const User = sequelize.define('User', {
         allowNull: false,
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
     },
+}, {
+    timestamps: false,
 });
 
-User.generateAuthToken = function () {
-    const token = jwt.sign({id: uuid().toString()}, process.env.JWT_SECRET);
-    return {
-        type: 'authToken',
-        token
-    };
-};
-
 User.prototype.generateAuthTokenAndSaveUser = async function () {
-    const authToken = jwt.sign({id: uuid().toString()}, process.env.JWT_SECRET);
-
-    // Sauvegarde du jeton JWT dans le localStorage
-    localStorage.setItem('jwtToken', authToken.token);
-
-    return authToken.token;
+    return jwt.sign({id: uuid().toString()}, process.env.JWT_SECRET);
 };
 
 User.findUser = async function (email, password) {
