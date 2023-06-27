@@ -1,8 +1,8 @@
 -- Insertion de fausses données dans la table "Users"
 INSERT INTO Users (email, first_name, last_name, password, phone_number, created_at)
-VALUES ('user1@example.com', 'John', 'Doe', 'password1', '1234567890', NOW()),
-       ('user2@example.com', 'Jane', 'Smith', 'password2', '9876543210', NOW()),
-       ('admin@example.com', 'Admin', 'User', 'adminpassword', '5555555555', NOW());
+VALUES ('user1@test.com', 'John', 'Doe', 'abc', '1234567890', NOW()),
+       ('user2@test.com', 'Jane', 'Smith', 'abc', '9876543210', NOW()),
+       ('admin@test.com', 'Admin', 'User', 'abc', '5555555555', NOW());
 
 -- Insertion de fausses données dans la table "Scooters"
 INSERT INTO Scooters (name, battery_status, available, latitude, longitude, total_distance, created_at)
@@ -20,4 +20,5 @@ VALUES (1, 1, '2023-06-25 09:00:00', '2023-06-25 10:00:00', 3.5, 5.0, NOW()),
 -- Insertion de fausses données dans la table "PaymentDetails"
 INSERT INTO PaymentDetails (user_id, card_number, expiration_date, security_code)
 VALUES (1, '**** **** **** 1234', '2025-12-01', 123),
-       (2, '**** **** **** 5678', '2024-06-01', 456);
+       (2, '**** **** **** 5678', '2024-06-01', 456),
+       (3, '1234 5678 9876 5678', '2026-02-01', 656);
