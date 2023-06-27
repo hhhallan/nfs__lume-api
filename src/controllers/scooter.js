@@ -1,6 +1,4 @@
 const Scooter = require('../models/scooter');
-const User = require("../models/user");
-
 
 exports.getAll = async (req, res) => {
     try {
