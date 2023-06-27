@@ -15,7 +15,10 @@ app.use(express.json());
 
 // Routes
 const userRoutes = require('./src/routes/user');
+const scooterRoutes = require('./src/routes/scooter');
+
 app.use('/users', userRoutes);
+app.use('/scooters', scooterRoutes);
 
 
 
