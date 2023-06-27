@@ -2,7 +2,6 @@ const {DataTypes, Sequelize} = require('sequelize');
 const sequelize = require('../services/sequelize');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const {uuid} = require('uuidv4');
 
 const User = sequelize.define('User', {
     id: {
@@ -70,8 +69,10 @@ const User = sequelize.define('User', {
     timestamps: false,
 });
 
-User.prototype.generateAuthTokenAndSaveUser = async function () {
-    return jwt.sign({id: uuid().toString()}, process.env.JWT_SECRET);
+User.prototype.generateToken = async function (durationInMinutes) {
+    const expirationTime = Math.floor(Date.now() / 1000) + (durationInMinutes * 60);
+    const payload = { id: this.id, exp: expirationTime };
+    return jwt.sign(payload, process.env.JWT_SECRET);
 };
 
 User.findUser = async function (email, password) {
