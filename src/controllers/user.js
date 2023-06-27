@@ -6,7 +6,10 @@ exports.getAll = async (req, res) => {
         const users = await User.findAll();
         res.status(200).json(users);
     } catch (error) {
-        res.status(500).json({error});
+        res.status(500).json({
+            error,
+            message: 'Une erreur est survenue lors de la récupération.'
+        });
     }
 };
 
@@ -18,12 +21,15 @@ exports.getOneById = async (req, res) => {
         if (!user) return res.status(404).json({error: 'Utilisateur non trouvé'});
         res.json(user);
     } catch (error) {
-        res.status(500).json({error});
+        res.status(500).json({
+            error,
+            message: 'Une erreur est survenue lors de la récupération.'
+        });
     }
 };
 
 exports.create = async (req, res) => {
-    const {email, password, first_name, last_name} = req.body;
+    const {email, password, confirmPassword, first_name, last_name} = req.body;
 
     try {
         const existingUser = await User.findOne({
@@ -32,6 +38,10 @@ exports.create = async (req, res) => {
         if (existingUser) {
             return res.status(409).json({message: 'Un utilisateur avec cette adresse e-mail existe déjà.'});
         }
+
+        if (!password) return res.status(404).json({ message: "Veuillez rentrer un mot de passe." });
+        if (!confirmPassword) return res.status(404).json({ message: "Veuillez confirmer le mot de passe." });
+        if (confirmPassword !== password) return res.status(404).json({ message: "Les mots de passe de correspondent pas." });
 
         const newUser = await User.create({
             email,
@@ -42,8 +52,10 @@ exports.create = async (req, res) => {
 
         res.status(201).json({user: newUser, message: 'Inscription réussie.'});
     } catch (error) {
-        console.log('Une erreur est survenue lors de l\'inscription.', error);
-        res.status(400).json({error: 'Une erreur est survenue lors de l\'inscription.'});
+        res.status(500).json({
+            error,
+            message: 'Une erreur est survenue lors de l\'inscription.'
+        });
     }
 };
 
@@ -58,7 +70,10 @@ exports.update = async (req, res) => {
 
         res.status(201).json(updatedUser);
     } catch (error) {
-        res.status(500).json({error});
+        res.status(500).json({
+            error,
+            message: 'Une erreur est survenue lors de la modification.'
+        });
     }
 };
 
@@ -72,7 +87,10 @@ exports.delete = async (req, res) => {
 
         res.json(deletedUser);
     } catch (error) {
-        res.status(500).json({error});
+        res.status(500).json({
+            error,
+            message: 'Une erreur est survenue lors de la suppression.'
+        });
     }
 };
 
@@ -86,7 +104,10 @@ exports.login = async (req, res) => {
 
         res.json({token, message: "Utilisateur connecté."});
     } catch (error) {
-        res.status(401).json({error: error.message});
+        res.status(500).json({
+            error,
+            message: 'Une erreur est survenue lors de la connexion.'
+        });
     }
 };
 
@@ -95,7 +116,10 @@ exports.logout = async (req, res) => {
         res.status(200).json({message: 'Déconnexion réussie'});
     } catch (error) {
         console.error(error);
-        res.status(500).json({message: 'Une erreur est survenue lors de la déconnexion'});
+        res.status(500).json({
+            error,
+            message: 'Une erreur est survenue lors de la déconnexion.'
+        });
     }
 };
 
@@ -114,7 +138,10 @@ exports.forgotPassword = async (req, res) => {
 
         res.status(200).json({token, message: "Un mail vous a été envoyé, il est valable 15 minutes."})
     } catch (error) {
-        res.status(500).json({message: 'Une erreur est survenue lors du mdp oublié.'});
+        res.status(500).json({
+            error,
+            message: 'Une erreur est survenue lors du forgot.'
+        });;
     }
 };
 
@@ -138,6 +165,9 @@ exports.resetPassword = async (req, res) => {
 
         res.status(200).json({message: "Votre mot de passe a été modifié !"});
     } catch (error) {
-        res.status(500).json({message: 'Une erreur est survenue lors du resets.'});
+        res.status(500).json({
+            error,
+            message: 'Une erreur est survenue lors du resets.'
+        });
     }
 };
