@@ -13,19 +13,19 @@ const Scooter = sequelize.define('Scooter', {
     },
     battery_status: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
     },
     available: {
         type: DataTypes.BOOLEAN,
-        allowNull: false,
+        allowNull: true,
     },
     latitude: {
         type: DataTypes.DECIMAL(9, 6),
-        allowNull: false,
+        allowNull: true,
     },
     longitude: {
         type: DataTypes.DECIMAL(9, 6),
-        allowNull: false,
+        allowNull: true,
     },
     total_distance: {
         type: DataTypes.FLOAT,

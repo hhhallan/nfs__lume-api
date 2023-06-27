@@ -18,9 +18,29 @@ exports.getOneById = async (req, res) => {
 
     try {
         const scooter = await Scooter.findByPk(scooterId);
-        if (!scooter) return res.status(404).json({ message: "Trottinette non trouvvée !" });
+        if (!scooter) return res.status(404).json({message: "Trottinette non trouvvée !"});
         res.status(200).json(scooter)
     } catch (error) {
 
     }
 }
+
+exports.create = async (req, res) => {
+    const {name} = req.body;
+
+    try {
+        const newScooter = await Scooter.create({
+            name
+        });
+
+        res.status(201).json({
+            scooter: newScooter,
+            message: "Trottinette enregistrée."
+        })
+    } catch (error) {
+        res.status(500).json({
+            error,
+            message: "Une erreur est survenue."
+        });
+    }
+};
