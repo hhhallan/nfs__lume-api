@@ -80,3 +80,24 @@ exports.delete = async (req, res) => {
         });
     }
 };
+
+exports.available = async (req, res) => {
+    try {
+        const scooters = await Scooter.findAll({
+            where: {
+                available: true
+            }
+        })
+
+        res.status(200).json({scooters})
+    } catch (error) {
+        res.status(404).json({
+            error,
+            message: "Une erreur est survenue lors de la récupération."
+        })
+    }
+}
+
+/*
+POST /scooters/{id}/rent - Louer une trottinette spécifique.
+*/
