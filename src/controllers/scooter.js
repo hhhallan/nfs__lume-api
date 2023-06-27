@@ -1,7 +1,7 @@
 const Scooter = require('../models/scooter');
 const User = require("../models/user");
 
-// CRUD
+
 exports.getAll = async (req, res) => {
     try {
         const scooters = await Scooter.findAll();
@@ -24,7 +24,7 @@ exports.getOneById = async (req, res) => {
     } catch (error) {
 
     }
-}
+};
 
 exports.create = async (req, res) => {
     const {name} = req.body;
@@ -96,8 +96,50 @@ exports.available = async (req, res) => {
             message: "Une erreur est survenue lors de la récupération."
         })
     }
-}
+};
 
-/*
-POST /scooters/{id}/rent - Louer une trottinette spécifique.
-*/
+exports.rent = async (req, res) => {
+    const scooterId = req.params.id;
+
+    try {
+        // Vérifier si la trottinette existe et est disponible
+        const scooter = await Scooter.findByPk(scooterId)
+        if (!scooter) return res.status(404).json({message: "La trottinette n'existe pas."});
+        if (!scooter.available) return res.status(400).json({message: "La trottinette n'est pas disponible."});
+
+        // Mise à jour de la disponibilité
+        await scooter.update({
+            available: false
+        });
+
+        res.status(200).json({scooter, message: "Votre location a commencé !"});
+    } catch (error) {
+        res.status(404).json({
+            error,
+            message: "Une erreur lors de la location."
+        })
+    }
+};
+
+exports.stopRent = async (req, res) => {
+    const scooterId = req.params.id;
+
+    try {
+        // Vérifier si la trottinette existe et est disponible
+        const scooter = await Scooter.findByPk(scooterId)
+        if (!scooter) return res.status(404).json({message: "La trottinette n'existe pas."});
+        if (scooter.available) return res.status(400).json({message: "La trottinette est déjà disponible."});
+
+        // Mise à jour de la disponibilité
+        await scooter.update({
+            available: true
+        });
+
+        res.status(200).json({scooter, message: "Votre location est désormais terminée !"});
+    } catch (error) {
+        res.status(404).json({
+            error,
+            message: "Une erreur lors de la location."
+        })
+    }
+};

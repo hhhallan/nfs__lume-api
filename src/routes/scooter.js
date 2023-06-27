@@ -3,6 +3,8 @@ const router = new express.Router();
 const scooterController = require('../controllers/scooter');
 
 router.get('/available', scooterController.available);
+router.post('/:id/rent', scooterController.rent);
+router.post('/:id/stop-rent', scooterController.stopRent);
 
 
 router.get('/', scooterController.getAll);
