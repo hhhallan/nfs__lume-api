@@ -89,6 +89,7 @@ const User = sequelize.define('User', {
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
     },
 }, {
+    tableName: 'Users',
     timestamps: false,
 });
 
