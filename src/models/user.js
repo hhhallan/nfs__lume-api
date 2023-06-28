@@ -114,5 +114,4 @@ User.beforeSave(async (user) => {
     }
 });
 
-
 module.exports = User;
