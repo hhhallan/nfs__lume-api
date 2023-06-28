@@ -134,7 +134,7 @@ exports.forgotPassword = async (req, res) => {
         if (!user) return res.status(404).json({message: 'Utilisateur non trouvé.'});
         const token = await user.generateToken(15);
 
-        // Envoi du mail
+        // Envoi du mail avec lien contenant le token (dans l'url)
 
         // Ajout du token
         await user.update({tmp_token: token});
@@ -181,10 +181,19 @@ exports.resetPassword = async (req, res) => {
 };
 
 // Location
+/**
+ * Get all rentals of user
+ * @param req
+ * @param res
+ * @returns {Promise<Rental[]>}
+ */
 exports.rentalsByUser = async (req, res) => {
-    const userId = req.params.id;
+    const userId = req.params.userId;
 
     try {
+        const user = await User.findByPk(userId);
+        if (!user) return res.status(404).json({message: "L'utilsateur n'existe pas."});
+
         const rentals = await Rental.findAll({
             where: {
                 user_id: userId
@@ -216,12 +225,18 @@ exports.rentScooter = async (req, res) => {
         const rental_end_time = moment().add(Math.floor(Math.random() * 10) + 10, 'minutes');
 
         const newRental = await Rental.create({
-            user_id: user,
-            scooter_id: scooter,
+            user_id: user.id,
+            scooter_id: scooter.id,
             rental_start_time,
             rental_end_time,
             total_distance: (Math.random() * 10).toFixed(1),
             total_amount: (rental_end_time.diff(rental_start_time, 'minutes') * 0.10).toFixed(2)
+
+        /*{
+            include: [{
+                User,
+                Scooter
+            }], */
         });
 
         res.status(200).json({newRental, message: "La location a démarré, roulez bien igo."});

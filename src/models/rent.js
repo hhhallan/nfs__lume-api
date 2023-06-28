@@ -1,5 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../services/sequelize');
+const User = require('./user');
+const Scooter = require('./scooter');
 
 const Rental = sequelize.define('Rental', {
     id: {
@@ -34,5 +36,8 @@ const Rental = sequelize.define('Rental', {
     tableName: 'Rentals',
     timestamps: false,
 });
+
+// Rental.User = Rental.belongsTo(User);
+Rental.Scooter = Rental.belongsTo(Scooter);
 
 module.exports = Rental;

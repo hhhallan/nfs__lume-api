@@ -13,8 +13,8 @@ router.post('/logout', userController.logout);
 router.post('/forgot-password', userController.forgotPassword);
 router.post('/reset-password', userController.resetPassword);
 
-router.get('/:id/rentals', userController.rentalsByUser);
+router.get('/:userId/rentals', userController.rentalsByUser);
 router.post('/rentals', userController.rentScooter);
-router.patch('/:id/rentals/:scooterId', userController.stopRentScooter);
+router.patch('/:userId/rentals/:scooterId', userController.stopRentScooter);
 
 module.exports = router;
