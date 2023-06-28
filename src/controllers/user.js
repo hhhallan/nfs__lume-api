@@ -147,16 +147,20 @@ exports.forgotPassword = async (req, res) => {
 
 exports.resetPassword = async (req, res) => {
     const { tmp_token } = req.query;
-    const { password, confirmPassword } = req.body;
+    const { email, password, confirmPassword } = req.body;
 
     try {
-        const user = await User.findOne({ where: {tmp_token}})
-        if (!user) return res.status(404).json({ message: "Utilisateur non trouvé via Token." });
+        // Vérifier si l'utilisateur existe avec l'e-mail fourni
+        const user = await User.findOne({ where: { email } });
+        if (!user) return res.status(404).json({ message: 'Utilisateur introuvable.' });
+
+        // Vérifier si le token correspond au token temporaire de l'utilisateur
+        if (tmp_token !== user.tmp_token) return res.status(400).json({ message: 'Token invalide.' });
 
         // Modification du mot de passe
-        if (!password) return res.status(404).json({ message: "Veuillez rentrer un mot de passe." });
-        if (!confirmPassword) return res.status(404).json({ message: "Veuillez confirmer le mot de passe." });
-        if (confirmPassword !== password) return res.status(404).json({ message: "Les mots de passe de correspondent pas." });
+        if (!password) return res.status(400).json({ message: "Veuillez rentrer un mot de passe." });
+        if (!confirmPassword) return res.status(400).json({ message: "Veuillez confirmer le mot de passe." });
+        if (confirmPassword !== password) return res.status(400).json({ message: "Les mots de passe de correspondent pas." });
 
         await user.update({
             password,
