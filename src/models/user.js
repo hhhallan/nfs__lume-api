@@ -2,7 +2,7 @@ const {DataTypes, Sequelize} = require('sequelize');
 const sequelize = require('../services/sequelize');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { uuid } = require('uuidv4');
+const Rental = require('./rent');
 
 const User = sequelize.define('User', {
     id: {
@@ -45,35 +45,44 @@ const User = sequelize.define('User', {
         type: DataTypes.STRING,
         allowNull: false,
         /*validate: {
-            min: {
-                args: 4,
-                msg: 'Le mot de passe doit contenir au minimum 8 caractères.'
-            }
-        }*/
+            isStrongPassword: {
+                args: [
+                    {
+                        minLength: 8,
+                        maxLength: 255,
+                        minLowercase: 0,
+                        minUppercase: 1,
+                        minNumbers: 1,
+                    },
+                ],
+                msg:
+                    'Le mot de passe doit contenir au moins 8 caractères, une majuscule et un chiffre.',
+            },
+        },*/
     },
     phone_number: {
         type: DataTypes.STRING,
         allowNull: true,
         /*validate: {
-            isValidPhoneNumber(value) {
-                if (!/^(\+\d{1,3})?[-.\s]?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/.test(value)) {
-                    throw new Error('Le numéro de téléphone doit être au format valide.');
+            isFrenchPhoneNumber: function (value) {
+                const phoneRegex = /^(?:\+33|0)[1-9](?:[.-\s]?\d{2}){4}$/;
+                if (value && !phoneRegex.test(value)) {
+                    throw new Error('Le numéro de téléphone doit être au format français.');
                 }
             },
-        }*/
+        },*/
     },
     role: {
         type: DataTypes.STRING,
         allowNull: false,
         defaultValue: 'User',
         validate: {
-            isIn: [['Admin', 'User']],
+            isIn: [['Admin', 'User']]
         },
     },
-    tokens: {
+    tmp_token: {
         type: DataTypes.STRING,
         allowNull: true,
-        defaultValue: []
     },
     created_at: {
         type: DataTypes.DATE,
@@ -85,27 +94,12 @@ const User = sequelize.define('User', {
     timestamps: false,
 });
 
-User.generateAuthToken = function() {
-    const token = jwt.sign({ id: uuid().toString() }, process.env.JWT_SECRET);
-    return {
-        type: 'authToken',
-        token
-    };
-};
+User.Rental = User.hasMany(Rental);
 
-User.prototype.generateAuthTokenAndSaveUser = async function () {
-    const authToken = User.generateAuthToken();
-
-    if (this.tokens === null || this.tokens === '') {
-        this.tokens = JSON.stringify([authToken]);
-    } else {
-        const tokensArray = JSON.parse(this.tokens);
-        tokensArray.push(authToken);
-        this.tokens = JSON.stringify(tokensArray);
-    }
-
-    await this.save();
-    return authToken.token;
+User.prototype.generateToken = async function (durationInMinutes) {
+    const expirationTime = Math.floor(Date.now() / 1000) + (durationInMinutes * 60);
+    const payload = {id: this.id, exp: expirationTime};
+    return jwt.sign(payload, process.env.JWT_SECRET);
 };
 
 User.findUser = async function (email, password) {
@@ -122,6 +116,5 @@ User.beforeSave(async (user) => {
         user.password = await bcrypt.hash(user.password, 11);
     }
 });
-
 
 module.exports = User;
