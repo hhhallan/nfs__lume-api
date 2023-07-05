@@ -249,5 +249,5 @@ exports.rentScooter = async (req, res) => {
 };
 
 exports.stopRentScooter = async (req, res) => {
-
+  
 };

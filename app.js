@@ -20,8 +20,6 @@ const scooterRoutes = require('./src/routes/scooter');
 app.use('/users', userRoutes);
 app.use('/scooters', scooterRoutes);
 
-
-
 // Lancement
 app.listen(port, () => {
     console.log(`Serveur lancé sur: http://localhost:${port}`)
