@@ -2,6 +2,7 @@ const {DataTypes, Sequelize} = require('sequelize');
 const sequelize = require('../services/sequelize');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const Rental = require('./rent');
 
 const User = sequelize.define('User', {
     id: {
@@ -93,6 +94,8 @@ const User = sequelize.define('User', {
     timestamps: false,
 });
 
+User.Rental = User.hasMany(Rental);
+
 User.prototype.generateToken = async function (durationInMinutes) {
     const expirationTime = Math.floor(Date.now() / 1000) + (durationInMinutes * 60);
     const payload = {id: this.id, exp: expirationTime};
@@ -113,6 +116,5 @@ User.beforeSave(async (user) => {
         user.password = await bcrypt.hash(user.password, 11);
     }
 });
-
 
 module.exports = User;

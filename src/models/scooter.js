@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../services/sequelize');
+const Rental = require("./rent");
 
 const Scooter = sequelize.define('Scooter', {
     id: {
@@ -40,5 +41,7 @@ const Scooter = sequelize.define('Scooter', {
     tableName: 'Scooters',
     timestamps: false,
 });
+
+// Scooter.Rental = Scooter.hasMany(Rental);
 
 module.exports = Scooter;
